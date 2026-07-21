@@ -17,7 +17,7 @@
 
 ## The spec file — six sections, in this order
 
-Write to `<<TASK_SPEC_PATH>>` (e.g. `docs/tasks/task_<ID>_<slug>.md`). Sections:
+Write to `docs/tasks/task_<ID>_<slug>.md`. Sections:
 
 1. [ ] **Background** — what and why, briefly.
 2. [ ] **What Already Exists (Do Not Rewrite)** — name the existing code the agent must build *on*, not replace. Prevents re-implementation.
@@ -43,9 +43,9 @@ Write to `<<TASK_SPEC_PATH>>` (e.g. `docs/tasks/task_<ID>_<slug>.md`). Sections:
 - [ ] Tells the agent to **read the spec file first by name/path**, in full, before writing any code.
 - [ ] Restates the implementation as 2–4 direct sentences: what to do, which files, the key constraints.
 - [ ] Calls out **every** hard constraint from the list above that applies.
-- [ ] Ends with the standing invariants line: `<<STANDING_INVARIANTS: e.g. "No business logic in the renderer. Never modify a user data file. Build with <<BUILD_CMD>> when done.">>`
+- [ ] Ends with the standing invariants line: `Standing invariants: honor docs/architecture-facts.md and CLAUDE.md; the renderer holds no business logic, DB, or MQTT/UNS access; authorization is enforced server-side; keep contract docs (Rule 12) and user-docs (Rule 18) in the same commit; migrations run on both SQLite and Postgres; never read/write/delete data outside the app's own store; build with npm run build when done.`
 
-**The command handed to the human** mirrors this: `<<AGENT_CMD_PREFIX>> "Read <<TASK_SPEC_PATH>> in full before writing any code. [2–4 sentence summary + constraints.] <<STANDING_INVARIANTS>>"`
+**The command handed to the human** mirrors this: `To Claude Code — "Read docs/tasks/task_<ID>_<slug>.md in full before writing any code. [2–4 sentence summary + constraints.] [the standing-invariants line above]"`
 
 ---
 

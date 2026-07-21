@@ -34,4 +34,6 @@ Anything two independently-editable parts of CMMess agree on:
 - The **review agent** flags any diff that changes a contract with no matching doc
   change.
 - `<<ADOPT-IF: contract drift recurs despite the above — add a CI check that fails a
-  contract change with no matching doc change (see layer-b2/ratchet.scaffold.md).>>`
+  contract change shipped with no matching doc change. Implement it as a ratchet: the
+  check fails on the forbidden pattern everywhere except an allowlist of known offenders
+  that may only ever shrink, never grow.>>`

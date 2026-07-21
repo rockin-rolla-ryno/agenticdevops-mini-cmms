@@ -19,13 +19,13 @@ If either is incomplete, **do not** land partial doc updates — flag the gap to
 
 ## The four edits, in order — all in one turn
 
-1. [ ] **Task index row → complete.** In `<<TASK_INDEX_DOC>>` (e.g. `project_management.md` §6), flip this task's existing row from in-progress to complete, with the date. **Edit the existing row in place — do not append a second row.** One row per task for its whole lifecycle.
+1. [ ] **Task index row → complete.** In `docs/project_management.md`, flip this task's existing row from in-progress to complete, with the date. **Edit the existing row in place — do not append a second row.** One row per task for its whole lifecycle.
 
-2. [ ] **Bug log → fixed** *(only if this task fixed a logged bug).* In `<<BUG_LOG_DOC>>`, move the entry from Active to Fixed. Skip if not a bug fix.
+2. [ ] **Bug log → fixed** *(only if this task fixed a logged bug).* In `docs/bug_log.md`, move the entry from Active to Fixed. Skip if not a bug fix.
 
-3. [ ] **Close-out entry written.** Add the entry to `<<COMPLETED_DEV_DOC>>` following the per-entry convention (below). Describe **what was actually built**, verified by your own file reads — never what was merely planned.
+3. [ ] **Close-out entry written.** Add the entry to `docs/completed_development.md` following the per-entry convention (below). Describe **what was actually built**, verified by your own file reads — never what was merely planned.
 
-4. [ ] **State-of-play doc updated.** In `<<HANDOFF_DOC>>` (the always-current one), update the "current state" header and "next steps" so they reflect the task that just shipped and the one after it — not a prior session's frontier. *This is the edit that drifts if it isn't bound to the turn. It is #4 on purpose: it's the one most often forgotten.*
+4. [ ] **State-of-play doc updated.** In `docs/agent_handoff.md` (the always-current one), update the "current state" header and "next steps" so they reflect the task that just shipped and the one after it — not a prior session's frontier. *This is the edit that drifts if it isn't bound to the turn. It is #4 on purpose: it's the one most often forgotten.*
 
 ---
 
@@ -35,18 +35,18 @@ Keep the mechanism where it belongs: precedents and traps live **once** in their
 
 **Header block:**
 ```
-### <<TASK_ID>> — <<short headline, ≤20 words>>
+### <TASK_ID> — <short headline, ≤20 words>
 
 **Date:** YYYY-MM-DD
-**Spec:** <<path to the task spec>>
-**Verified by human:** <<✅ YYYY-MM-DD — short confirmation quote>>  |  <<🟡 pending — PM-verified by reads; awaiting runtime test>>
+**Spec:** <path to the task spec>
+**Verified by human:** <✅ YYYY-MM-DD — short confirmation quote>  |  <🟡 pending — PM-verified by reads; awaiting runtime test>
 ```
 
 **Body — these sections, in this order:**
 1. [ ] **What was built.** 1–3 paragraphs of concrete deliverables. A reader should learn "what does this ship enable?" without scrolling.
 2. [ ] **Files touched.** Paths, one line each, NEW vs. modified. Blast-radius record, not narration.
 3. [ ] **Deviations from spec.** Every variation from the spec + one line why each is acceptable. If none: `Deviations from spec: None.`
-4. [ ] **Architectural impact.** One line: `None — fits pattern X.` / `Precedent N codified — see <<HANDOFF_DOC>>.` / `Trap N codified — see <<BUG_LOG_DOC>>.` Pointer-only.
+4. [ ] **Architectural impact.** One line: `None — fits pattern X.` / `Precedent N codified — see docs/agent_handoff.md.` / `Trap N codified — see docs/bug_log.md.` Pointer-only.
 5. [ ] **User-facing impact.** One mandatory line, never omitted: what a *user* would notice + the user-doc pages updated in the same commit, or `None.` `None.` is an assertion a human considered the question — not a shrug.
 
 **Length caps (hard):** single-artifact ship ≤50 lines; multi-artifact ≤75; combined-ship (2+ IDs as a unit) ≤75.
