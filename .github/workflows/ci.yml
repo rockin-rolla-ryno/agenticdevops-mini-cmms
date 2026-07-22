@@ -39,14 +39,14 @@ jobs:
         run: pytest
 
   renderer:
-    name: Renderer (Node 22)
+    name: Renderer (Node 26)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: '26'
 
       - name: Install — renderer
         run: npm ci

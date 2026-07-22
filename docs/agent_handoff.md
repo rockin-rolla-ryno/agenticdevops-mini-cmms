@@ -31,7 +31,7 @@ Then read what's relevant per the Tier-1/Tier-2 list in the project instructions
 ## Immediate next steps
 
 1. Human: have Claude Code commit on `T-002-renderer-scaffold-ci` (close-out doc edits ride the same branch), push, open the PR (body template in `development_workflow.md` §4).
-2. Human + PM: confirm CI green on the PR → squash-merge, delete branch. That closes T-002's last criterion.
+2. Human + PM: confirm CI green on the PR → squash-merge, delete branch. That closes T-002's last criterion. *(First run failed on `npm ci` — npm-major skew, see TRAP-001; fix in flight: CI pin moved Node 22→26 in `devops_pipeline.md`, coding agent bumps `ci.yml` + regenerates the lock on the branch.)*
 3. Human: pass over `docs/functional-spec.md` — rule on the **[default]** markers and FS-Q1–Q8. This is now the frontier: next specs are feature slices cut from the FS (likely: data model + persistence base, then auth/roles).
 
 ## Architecture authorities by area (read the one you're touching)
