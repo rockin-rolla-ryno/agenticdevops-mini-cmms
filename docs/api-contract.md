@@ -62,6 +62,81 @@ renderer login task adds the TS types for these shapes.
   {"id": 1, "username": "planner1", "role": "planner"}
   ```
 
+## Assets
+
+Registry browse + manual-asset lifecycle (`backend/app/assets.py`). All five
+endpoints require a bearer session at the **`require_user`** level — both
+roles can browse, register, edit, and retire. Uniform 401/403 semantics per
+the Auth section.
+
+**Derived, never stored:** an asset's `status` (`"up" | "down"`) and each
+downtime `duration_seconds` are computed from `downtime_events` at read time.
+`status="down"` iff an ongoing event (`up_at IS NULL`) exists.
+
+**Provenance rules (DEC-008):** `uns_discovered` rows are a cache rebuilt
+from UNS discovery — `PATCH` and retire on them return **409**. Paths share
+one namespace: registering a duplicate path returns **409**.
+
+**Shared models:**
+
+- `AssetOut` — `id: int`, `path: str`, `display_name: str`,
+  `description: str | null`, `provenance: "uns_discovered" | "manual"`,
+  `retired: bool`, `status: "up" | "down"`, `created_at`, `updated_at`
+- `DowntimeEventOut` — `id`, `producer: "uns" | "manual"`, `down_at`,
+  `up_at: datetime | null`, `duration_seconds: float | null` (null while
+  ongoing), `reported_by: int | null`, `ended_by: int | null`
+- `WorkOrderSummaryOut` — `id`, `origin`, `title`, `priority`, `status`,
+  `created_at` (summary only — T-007 owns the full WO surface)
+
+TypeScript leg: N/A until the renderer client lands (T-008).
+
+### GET /assets
+
+- **Auth:** bearer (`require_user`)
+- **Query:** `include_retired: bool = false` — retired assets are hidden by
+  default (FS-Q7)
+- **Response:** `list[AssetOut]`, ordered by `path`. Flat — the renderer
+  builds the path hierarchy client-side.
+
+### GET /assets/{asset_id}
+
+- **Auth:** bearer (`require_user`)
+- **Response:** `AssetDetailOut` = `AssetOut` + `downtime_history:
+  list[DowntimeEventOut]` (newest first) + `work_orders:
+  list[WorkOrderSummaryOut]` (newest first)
+- Reachable even when retired (hidden, not gone). **Errors:** `404` unknown id.
+
+### POST /assets
+
+- **Auth:** bearer (`require_user`) — manual registration, either role
+- **Request:** `AssetCreate` — `path: str`, `display_name: str`,
+  `description: str | null = null`. Path is validated server-side: stripped,
+  1–255 chars, no leading/trailing `/`, all `/`-segments non-empty and
+  non-whitespace → else **422**.
+- **Response:** `201` + `AssetOut` (`provenance="manual"`, `retired=false`)
+- **Errors:** `409` duplicate path (any provenance, retired or not); `422`
+  malformed path
+
+### PATCH /assets/{asset_id}
+
+- **Auth:** bearer (`require_user`)
+- **Request:** `AssetUpdate` — `display_name: str | null`,
+  `description: str | null`; omitted fields unchanged, explicit
+  `description: null` clears it. **`path` is deliberately absent** (path
+  immutability, FS §3) and unknown fields are rejected (`extra="forbid"`) →
+  **422**.
+- **Response:** `AssetOut`. Editing a retired manual asset is allowed.
+- **Errors:** `404` unknown id; `409` on `uns_discovered`; `422` unknown/extra
+  fields
+
+### POST /assets/{asset_id}/retire
+
+- **Auth:** bearer (`require_user`)
+- **Response:** `AssetOut` with `retired=true`. Idempotent — retiring an
+  already-retired asset is a `200` no-op. No un-retire endpoint in v1
+  (decided absence).
+- **Errors:** `404` unknown id; `409` on `uns_discovered`
+
 ## Endpoints
 
 ### GET /health
