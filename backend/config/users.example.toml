@@ -1,0 +1,27 @@
+# CMMess seeded accounts (FS-Q5) — EXAMPLE FILE.
+#
+# Flow:
+#   1. Copy this file to backend/config/users.toml (gitignored), or point
+#      CMMESS_USERS_FILE at your own path.
+#   2. Generate each password_hash with:  python -m app.hash_password
+#      (prompts without echo, prints the bcrypt hash to paste below).
+#   3. Start the backend. At startup, accounts are upserted by username:
+#      missing accounts are created, existing ones get their role/hash
+#      updated to match this file, and any DB account absent from this
+#      file is DEACTIVATED (never deleted — history stays intact).
+#
+# role is one of: "user" (technician/engineer) | "planner" (manager).
+# The example hashes below are for the passwords noted alongside them —
+# replace both accounts with real ones before any non-toy use.
+
+[[users]]
+username = "planner1"
+# hash of "change-me-planner" — replace
+password_hash = "$2b$12$TDWfKQya.5JurtO6C2jyWO5DeyQji1DV9Ejpy.AAFOR6plc2Dw3oa"
+role = "planner"
+
+[[users]]
+username = "tech1"
+# hash of "change-me-user" — replace
+password_hash = "$2b$12$luWU36lSf8HiqNWGu3.UpOUcINe5KE85M9mgcf92l7c5qpwFBS4y."
+role = "user"

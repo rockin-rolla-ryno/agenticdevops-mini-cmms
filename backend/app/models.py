@@ -25,6 +25,7 @@ from sqlalchemy import (
     Text,
     false,
     text,
+    true,
 )
 from sqlalchemy import (
     Enum as SAEnum,
@@ -101,7 +102,12 @@ def _str_enum(enum_cls: type[StrEnum], name: str) -> SAEnum:
 
 
 class User(Base):
-    """Accounts exist so domain FKs are real from day one; auth/seeding is T-004."""
+    """Seeded config accounts (FS-Q5); T-004 adds auth + `active`.
+
+    ``active`` exists for seeded-config revocation: an account removed from
+    the users config must stop logging in, but its row (referenced by
+    history FKs) is never deleted.
+    """
 
     __tablename__ = "users"
 
@@ -109,9 +115,29 @@ class User(Base):
     username: Mapped[str] = mapped_column(String(64), unique=True)
     role: Mapped[UserRole] = mapped_column(_str_enum(UserRole, "user_role"))
     password_hash: Mapped[str] = mapped_column(String(255))
+    active: Mapped[bool] = mapped_column(Boolean, default=True, server_default=true())
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=utcnow
     )
+
+
+class Session(Base):
+    """An opaque bearer session token, stored only as its SHA-256 hex.
+
+    The raw token exists solely in the login response; it is never persisted
+    or logged. Expired/orphaned sessions are treated as invalid on read —
+    no background sweeper in v1.
+    """
+
+    __tablename__ = "sessions"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    token_hash: Mapped[str] = mapped_column(String(64), unique=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utcnow
+    )
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
 
 
 class Asset(Base):

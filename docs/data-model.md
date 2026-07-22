@@ -31,15 +31,40 @@ DEC-008 (asset authority by provenance).
 
 ### `users`
 
-Accounts exist so domain FKs are real from day one; auth + seeding are T-004.
+Accounts are **seeded from a TOML config** (FS-Q5), not self-registered.
 
 | Column | Type | Constraints |
 |---|---|---|
 | `id` | int | PK |
 | `username` | str(64) | unique, not null |
 | `role` | str(32) | CHECK in (`user`, `planner`) — the two FS roles |
-| `password_hash` | str(255) | not null |
+| `password_hash` | str(255) | not null — bcrypt |
+| `active` | bool | not null, default true (0002) — seeded-config revocation flag |
 | `created_at` | datetime (UTC) | not null |
+
+**Seeding semantics (runs in the FastAPI lifespan at startup, never on
+import):** the TOML at `CMMESS_USERS_FILE` (default `backend/config/users.toml`,
+gitignored; committed example: `backend/config/users.example.toml`) is upserted
+by username — missing accounts are created, existing ones get role/hash updated
+and are reactivated. Any DB user **absent from the config is deactivated,
+never deleted** — history FKs stay valid, but the account can no longer log in
+and its existing sessions stop resolving. If the schema isn't migrated,
+startup fails with an operator message to run `alembic upgrade head`.
+Hash generation: `python -m app.hash_password`.
+
+### `sessions`
+
+Opaque bearer sessions (T-004). The raw token exists only in the login
+response; **at rest only its SHA-256 hex is stored**. Expired/orphaned rows
+are treated as invalid on read — no background sweeper in v1.
+
+| Column | Type | Constraints |
+|---|---|---|
+| `id` | int | PK |
+| `token_hash` | str(64) | unique, not null — SHA-256 hex of the raw token |
+| `user_id` | int | FK→`users.id`, not null |
+| `created_at` | datetime (UTC) | not null |
+| `expires_at` | datetime (UTC) | not null — now + `CMMESS_SESSION_TTL_HOURS` (default 24) at creation |
 
 ### `assets`
 
@@ -127,7 +152,8 @@ The FS's per-transition audit trail (including abandon notes). Transition
 
 - **Alembic**, config in `backend/alembic.ini`, environment in
   `backend/alembic/`, versions in `backend/alembic/versions/`. Run from
-  `backend/`: `alembic upgrade head`.
+  `backend/`: `alembic upgrade head`. Current head: `0002`
+  (`0001` initial schema → `0002` auth: `users.active` + `sessions`).
 - **Dual-engine (DEC-006): every migration file runs unmodified on both SQLite
   and Postgres.** No dialect-specific SQL, no native PG ENUM types. The
   env-gated test `test_upgrade_runs_on_postgres_when_url_provided` proves it
