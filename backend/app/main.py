@@ -9,6 +9,7 @@ from pydantic import BaseModel
 
 from app.assets import router as assets_router
 from app.auth import router as auth_router
+from app.downtime import router as downtime_router
 from app.seeding import seed_users_from_config
 
 
@@ -31,6 +32,7 @@ async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
 app = FastAPI(title="CMMess Backend", lifespan=lifespan)
 app.include_router(auth_router)
 app.include_router(assets_router)
+app.include_router(downtime_router)
 
 
 @app.get("/health", response_model=HealthResponse)

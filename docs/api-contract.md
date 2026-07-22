@@ -137,6 +137,58 @@ TypeScript leg: N/A until the renderer client lands (T-008).
   (decided absence).
 - **Errors:** `404` unknown id; `409` on `uns_discovered`
 
+## Downtime events
+
+The event→WO pipeline (`backend/app/downtime.py`). Reporting downtime seeds a
+work order **atomically** in the same transaction — both or neither. The
+reusable service `record_downtime(db, asset, producer, reported_by)` is the
+seeding core; the future UNS ingestion task calls it directly with
+`producer="uns"` (origin `uns_downtime`, `created_by` null) — no parallel
+seeding path may be written.
+
+Response shapes reuse the Assets section's `DowntimeEventOut` and
+`WorkOrderSummaryOut` — no duplicate models.
+
+**Explicit independence (FS §4):** ending a downtime event never changes its
+work order's status, and no work-order code path ends events.
+
+TypeScript leg: N/A until T-008.
+
+### POST /assets/{asset_id}/downtime-events
+
+- **Auth:** bearer (`require_user`) — either role reports
+- **Request:** no body fields in v1 — `down_at` is always server time (no
+  backdating; decided absence)
+- **Response:** `201` → `{"event": DowntimeEventOut, "work_order":
+  WorkOrderSummaryOut}`. The seeded WO: origin `manual_downtime`, linked
+  `downtime_event_id`, title `Downtime — {path}`, priority `medium`, status
+  `open`, `created_by` = the reporter.
+- **Errors:**
+  - `404` unknown asset
+  - `409` retired asset (no new activity on retired assets)
+  - `409` **FS-Q1 rejection** with a structured pointer body:
+
+    ```json
+    {"detail": {"message": "asset already has an ongoing downtime event",
+                "ongoing_event_id": 7, "work_order_id": 12}}
+    ```
+
+    `work_order_id` is null only in the theoretical case no WO row links to
+    the ongoing event. The same body is returned on the insert race (the
+    partial unique index is the backstop) — never a 500.
+
+### POST /downtime-events/{event_id}/end
+
+- **Auth:** bearer (`require_user`) — either role ends **manual** events
+- **Response:** `200` → `DowntimeEventOut` with `up_at` = server time,
+  `ended_by` = the current user, `duration_seconds` now set
+- **Errors:**
+  - `404` unknown event
+  - `409` `uns`-producer event — people end manual events only; UNS events
+    end via the UNS up-signal (later task)
+  - `409` already ended — **not idempotent**, so `ended_by` attribution is
+    never silently rewritten
+
 ## Endpoints
 
 ### GET /health
