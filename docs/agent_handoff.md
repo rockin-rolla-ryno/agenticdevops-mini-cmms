@@ -30,14 +30,18 @@ Then read what's relevant per the Tier-1/Tier-2 list in the project instructions
 
 **FS settled (2026-07-22).** The Architect's pass on `docs/functional-spec.md` is complete: FS-Q1–Q8 ruled, all [default] markers accepted, decisions baked into the doc (§ 9 is the decision record). Headline rulings: one ongoing downtime event per asset; each event seeds its own WO; Planner ⊇ User; cancel Planner-only with an executor abandon path; seeded config accounts; 3-level priority; retire-not-delete assets; and **FS-Q8 override — v1 publishes WO lifecycle state to a CMMess-owned UNS topic branch** (backend stays sole MQTT client; fire-and-forget, never blocks the WO lifecycle; expands `docs/uns-contract.md` scope to a publish surface when authored).
 
+**Session decision (2026-07-22): dev happens directly on `main` for the rest of this session** — Architect's call, workflow §8 conscious skip. CI runs post-hoc on each push; the discipline is to watch the push's CI run before starting the next task. Branch→PR resumes when the Architect says so.
+
+**T-003 shipped and closed out (2026-07-22).** Persistence base live (commit `4a5a651` on `main`): five typed models, dual-engine Alembic initial migration, FS-Q1 partial unique index + origin↔event pairing CHECK both DB-enforced and test-proven, `docs/data-model.md` authored same commit (Rule 12; authority index updated to *live*). Agent verified against real Postgres 16 (Docker) beyond the env-gated skip. Cursor QA PASS (5 passed/1 visible skip). Known non-blocking: `test_models` fixture uses a raw engine without the SQLite FK pragma — fine for its constraint proofs, but any future FK-violation test must use the `app.db` engine path. Postgres-in-CI still deliberately deferred (`CMMESS_TEST_POSTGRES_URL` activates the leg). Full record: `docs/completed_development.md` § T-003.
+
 ## Immediate next steps
 
-1. PM: spec **T-003 — data model + persistence base** (SQLAlchemy/Alembic dual-engine; asset/downtime-event/WO schema per the settled FS; authors `docs/data-model.md`).
-2. Then **T-004 — auth/roles** (seeded config accounts per FS-Q5; server-side enforcement per DEC-005).
+1. PM: push `main`; **watch the CI run** (main-only session — CI is post-hoc).
+2. PM: spec **T-004 — auth/roles** (seeded config accounts per FS-Q5; login/session issuing; server-side per-endpoint role enforcement per DEC-005; first real api-contract.md growth).
 
 ## Architecture authorities by area (read the one you're touching)
 
-The full index is in `docs/authority-docs-by-area.md`. Short version: architecture constraints → `architecture-facts.md` (every spec) · persistence → `data-model.md` *(to author)* · REST boundary → `api-contract.md` *(to author)* · UNS/MQTT → `uns-contract.md` *(to author)* · boundary-change sync → `contract-sync.md` · auth/roles → `architecture-facts.md` § Security · UI → `design-guide.md` · packaging → `packaging.md` *(to author)*.
+The full index is in `docs/authority-docs-by-area.md`. Short version: architecture constraints → `architecture-facts.md` (every spec) · product behavior → `functional-spec.md` · persistence → `data-model.md` *(live)* · REST boundary → `api-contract.md` *(live)* · UNS/MQTT → `uns-contract.md` *(to author)* · boundary-change sync → `contract-sync.md` · auth/roles → `architecture-facts.md` § Security · UI → `design-guide.md` · packaging → `packaging.md` *(to author)*.
 
 ## Standing notes
 

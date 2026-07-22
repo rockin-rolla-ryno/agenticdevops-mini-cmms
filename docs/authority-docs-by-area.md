@@ -10,7 +10,7 @@
 |---|---|---|
 | Architecture constraints (all areas) | `docs/architecture-facts.md` | every spec — the hard constraints to enforce |
 | Product behavior (features, roles, lifecycles, v1 scope) | `docs/functional-spec.md` | any feature work — what the product does, per role |
-| Persistence / data model | `docs/data-model.md` *(to author)* | any schema, migration, or storage work |
+| Persistence / data model | `docs/data-model.md` *(live — authored by T-003)* | any schema, migration, or storage work |
 | Renderer↔backend REST boundary | `docs/api-contract.md` *(live — seeded by T-001)* | any endpoint, request/response shape, or cross-boundary work |
 | UNS / MQTT asset discovery | `docs/uns-contract.md` *(to author)* | any UNS topic-structure or MQTT-client work |
 | What moves together at a boundary | `docs/contract-sync.md` | before changing **any** boundary contract (Rule 12) |

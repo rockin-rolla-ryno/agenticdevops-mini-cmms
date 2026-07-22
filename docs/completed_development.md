@@ -16,6 +16,22 @@ The one line worth repeating because it's mandatory and cheap: every entry carri
 
 ## Log
 
+### T-003 — Data model + persistence base: SQLAlchemy 2.0, Alembic dual-engine, core schema
+
+**Date:** 2026-07-22
+**Spec:** `docs/tasks/task_T-003_data-model-persistence.md`
+**Verified by human:** ✅ 2026-07-22 — runtime surface nil for this task (no endpoints or UI changed); human accepted the review agent's live-boot check (`uvicorn` → `GET /health` 200) in lieu of a separate eye-test.
+
+**What was built.** The persistence layer (commit `4a5a651`, direct on `main` per the session decision): five SQLAlchemy 2.0 typed models (`users`, `assets`, `downtime_events`, `work_orders`, `work_order_transitions`) with enum values as strings + CHECK constraints (never native PG enums), one hand-written Alembic initial migration that runs unmodified on SQLite and Postgres, config via `CMMESS_DATABASE_URL` (default `backend/data/cmmess.db`, gitignored, lazily created, off-limits to tests), and `docs/data-model.md` authored as the schema authority in the same commit (Rule 12). Both FS-derived invariants are enforced **at the database level** and test-proven in both directions: FS-Q1's one-ongoing-downtime-event-per-asset (partial unique index) and FS §5's origin↔event pairing (CHECK). Beyond spec, kept deliberately: `PRAGMA foreign_keys=ON` per SQLite connection (dual-engine referential-integrity parity), a metadata naming convention enabling future batch migrations, `render_as_batch` in env.py, and the agent verified the migration + both constraints against a real Postgres 16 (throwaway Docker) rather than resting on the env-gated skip. Cursor QA: PASS, 5 passed/1 visible skip (the Postgres leg awaiting `CMMESS_TEST_POSTGRES_URL`).
+
+**Files touched.** All backend/docs, NEW unless noted: `backend/app/config.py` · `backend/app/db.py` · `backend/app/models.py` · `backend/alembic.ini` · `backend/alembic/env.py` · `backend/alembic/script.py.mako` · `backend/alembic/versions/0001_initial_schema.py` · `backend/tests/test_migrations.py` · `backend/tests/test_models.py` · `docs/data-model.md` · `backend/requirements.txt` (edit: +sqlalchemy, +alembic, +psycopg) · `.gitignore` (edit: +`backend/data/`).
+
+**Deviations from spec.** None. Known non-blocking (QA smells, agreed): the `test_models` session fixture uses a raw engine without the FK pragma — the constraint proofs it makes don't depend on FK enforcement, but a future test asserting FK violations must use the `app.db` engine path; the agent's local gate ran Python 3.14 (3.12 not installed locally) — the pinned runtime is covered by CI on push.
+
+**Architectural impact.** DEC-006 and DEC-008 now have their first enforcement in code; `docs/data-model.md` is live as the schema authority (announced in `authority-docs-by-area.md`'s terms — the *(to author)* marker is now stale there and in the handoff's short index).
+
+**User-facing impact.** None. No user-visible surface; no user-doc changes required.
+
 ### T-002 — Renderer scaffold: Electron+Vite+React shell; CI workflow live
 
 **Date:** 2026-07-22
