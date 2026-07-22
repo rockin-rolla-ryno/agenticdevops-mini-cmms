@@ -44,10 +44,13 @@ Then read what's relevant per the Tier-1/Tier-2 list in the project instructions
 
 **T-006 shipped and closed out (2026-07-22).** Downtime API + atomic WO seeding live on `main` (commit `25fa63a`): `record_downtime(...)` is the single, HTTP-free seeding path (UNS ingestion must reuse it — mandated in `api-contract.md`), FS-Q1 rejects with the structured 409 pointer body incl. on the IntegrityError race, ending is manual-producer-only/non-idempotent and never touches WO status. Cursor QA pass (Architect-confirmed); PM 10-check CL runtime suite pass, including a live direct `record_downtime(producer="uns")` call. Full record: `docs/completed_development.md` § T-006. **T-005 CI green (prior push); T-006 push CI pending — watch it.** Also landed this session by the PM: `docs/design-guide.md` (starter baseline, awaiting Architect design pass — was cited-but-missing drift) and the T-008 spec (`docs/tasks/task_T-008_renderer-initial-ui.md`; CORS is its one backend change; zero new npm deps).
 
+**T-007 shipped and closed out (2026-07-22) — backend domain surface complete.** Work-order API live on `main` (commit `93dfaa1`): FS §5 state machine verbatim through five intent-named transitions, `_apply_transition` as the single audit-writing choke point (the FS-Q8 publish hook), executor rule = `assigned_to` claims on start. Cursor QA pass; PM 12-check CL runtime suite verified the full audited lifecycle live. Known soft spot (logged in the T-007 close-out entry): check-then-act transitions without row locking — revisit for Postgres-primary. Full record: `docs/completed_development.md` § T-007.
+
 ## Immediate next steps
 
-1. Dev: **T-007 — Work-order API** (spec: `docs/tasks/task_T-007_work-order-api.md`; command handed 2026-07-22). Then T-008 (spec ready).
-2. Loop as established: Dev on `main` → Cursor QA → PM read-verify → runtime test (PM-delegated this session) → close-out → push → watch CI.
+1. Dev: **T-008 — Renderer initial UI** (spec: `docs/tasks/task_T-008_renderer-initial-ui.md`; command handed 2026-07-22). The sprint's last leg: typed client (Rule 12 TS leg goes live), CORS (the one backend change), all FS §7 screens, zero new npm deps. PM verify plan staged (CL half: CORS preflight proofs, types-vs-contract field audit, lockfile untouched; eye-test half: the human drives the Electron UI through the full reactive loop).
+2. Loop as established: Dev on `main` → Cursor QA → PM read-verify → runtime test (T-008: human eye-test required — PM cannot drive Electron) → close-out → push → watch CI.
+3. After the sprint: cut the next slices — UNS ingestion/publishing (`uns-contract.md` to author with it) and packaging (`packaging.md`); CI action-version bumps in the next CI-touching task.
 
 ## Architecture authorities by area (read the one you're touching)
 

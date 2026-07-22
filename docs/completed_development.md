@@ -16,6 +16,26 @@ The one line worth repeating because it's mandatory and cheap: every entry carri
 
 ## Log
 
+### T-007 — Work-order API: FS §5 state machine, planning, single-choke-point audit trail
+
+**Date:** 2026-07-22
+**Spec:** `docs/tasks/task_T-007_work-order-api.md`
+**Verified by human:** ✅ 2026-07-22 — Cursor QA pass ("QA Passed -- ship it"); runtime delegated to PM — 12-check CL suite passed, full audited lifecycle verified live.
+
+**What was built.** The backend domain surface completed (commit `93dfaa1`): `backend/app/work_orders.py` — list (five exact-match ANDed filters; planner queue = `status=open`), detail (reused `DowntimeEventOut` + chronological transitions), direct manual creation (origin `manual`, FS-Q6 priority), creator-or-planner PATCH (open/planned only; priority deliberately lives in `plan`), and five intent-named transitions implementing FS §5 verbatim: `plan` (planner; re-plan updates fields with no audit row), `start` (self-serve claim from open sets `assigned_to`; assignee-only from planned, planners included), `complete` (executor-only, non-empty notes), `abandon` (executor-or-planner, returns to the `from_status` of the latest entry into `in_progress`, clears assignment only to open), `cancel` (planner-only, any non-terminal). `_apply_transition` is the single write path — status + audit row in one transaction, documented as the FS-Q8 UNS-publish hook. Wrong person → 403; wrong state → 409 naming the current status. Completing/cancelling never ends the downtime event (FS §4, tested API+ORM).
+
+**Files touched.**
+- `backend/app/work_orders.py` — NEW: router, models, transition helper.
+- `backend/tests/test_work_orders.py` — NEW: 13 tests, 3 seeded accounts (executor gates need a non-assignee).
+- `backend/app/main.py` — modified: include router (2 lines).
+- `docs/api-contract.md` — modified: `## Work orders` section, same commit (Rule 12).
+
+**Deviations from spec.** None.
+
+**Architectural impact.** Executor rule codified (start claims via `assigned_to`; no executor column) — recorded in `api-contract.md`. Known soft spot logged, not fixed: transition endpoints are check-then-act without row locking — fine under SQLite's writer serialization; revisit with `SELECT … FOR UPDATE` when Postgres becomes primary.
+
+**User-facing impact.** None yet — surface arrives with T-008; API documented in `docs/api-contract.md` (same commit).
+
 ### T-006 — Downtime events API + atomic work-order seeding (the event→WO core)
 
 **Date:** 2026-07-22
